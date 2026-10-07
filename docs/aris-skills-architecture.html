@@ -1,0 +1,484 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ARIS Skills 架构图</title>
+<style>
+  :root { color-scheme: light dark; --bg:#f5f7fb; --surface:#fff; --ink:#162238; --sub:#516078; --line:#d8deea; --accent:#2859c5; --soft:#eaf0ff; --green:#dff3e9; --orange:#fff0d7; --purple:#eee8ff; --pink:#fbe8ee; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#101722; --surface:#182232; --ink:#f0f4fb; --sub:#acb9cc; --line:#334158; --accent:#8fb1ff; --soft:#202f50; --green:#17372d; --orange:#3e321f; --purple:#2f2549; --pink:#402732; } }
+  * { box-sizing:border-box; } body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.55 system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif; }
+  a { color:var(--accent); text-decoration:none; } a:hover { text-decoration:underline; }
+  .wrap { max-width:1600px; margin:auto; padding:34px 34px 80px; }
+  header { display:flex; gap:20px; justify-content:space-between; align-items:end; flex-wrap:wrap; border-bottom:1px solid var(--line); padding-bottom:24px; }
+  h1 { font-size:clamp(28px,3vw,42px); line-height:1.15; margin:0 0 10px; letter-spacing:-.02em; }
+  header p, .intro { margin:0; color:var(--sub); max-width:850px; }
+  .meta { display:flex; flex-wrap:wrap; gap:8px; } .badge { background:var(--soft); color:var(--ink); padding:5px 10px; border-radius:999px; font-size:12px; font-weight:650; white-space:nowrap; }
+  h2 { margin:36px 0 8px; font-size:22px; } .section-note { color:var(--sub); margin:0 0 18px; }
+  .entry { background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:14px 18px; margin-top:22px; display:flex; align-items:center; gap:16px; flex-wrap:wrap; }
+  .entry strong { font-size:17px; } .entry span { color:var(--sub); } .entry em { font-style:normal; margin-left:auto; color:var(--sub); font-size:13px; }
+  .flow { display:grid; grid-template-columns:minmax(0,1fr) 22px minmax(0,1fr) 22px minmax(0,1fr) 22px minmax(0,1fr); align-items:stretch; gap:10px; }
+  .flow-arrow { color:var(--sub); align-self:center; justify-self:center; font-size:28px; font-weight:700; }
+  .stage { min-width:0; padding:18px; background:var(--surface); border:1px solid var(--line); border-top:5px solid var(--accent); border-radius:14px; }
+  .stage-1 { border-top-color:#3974cb; } .stage-2 { border-top-color:#389b76; } .stage-3 { border-top-color:#ba8434; } .stage-4 { border-top-color:#a163a5; }
+  .stage-kicker { font-weight:750; font-size:12px; letter-spacing:.03em; color:var(--sub); } .stage h3 { margin:6px 0 7px; font-size:19px; overflow-wrap:anywhere; } .stage p { margin:0 0 14px; min-height:44px; }
+  .stage-steps { display:flex; flex-wrap:wrap; align-items:center; gap:4px; font-size:12px; line-height:1.8; } .seq-link { color:var(--ink); background:var(--soft); border-radius:5px; padding:1px 5px; white-space:nowrap; } .seq-arrow { color:var(--sub); padding:0 2px; }
+  .relation-label { display:block; flex-basis:100%; color:var(--sub); font-size:11px; font-weight:700; }
+  .stage small { color:var(--sub); display:block; margin-top:11px; }
+  .branches { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin-top:16px; }
+  .branch { background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:15px; } .branch:nth-child(1) { background:var(--green); } .branch:nth-child(2) { background:var(--orange); } .branch:nth-child(3) { background:var(--purple); } .branch:nth-child(4) { background:var(--pink); }
+  .branch h3 { margin:0 0 6px; font-size:15px; } .branch p { margin:0; color:var(--sub); font-size:13px; } .branch .links { margin:8px 0; display:flex; flex-wrap:wrap; gap:5px 9px; font-size:13px; }
+  .foundation { margin-top:16px; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; } .layer { border:1px dashed var(--line); padding:13px 16px; border-radius:11px; } .layer strong { display:block; margin-bottom:4px; } .layer p { color:var(--sub); margin:0; font-size:13px; }
+  .legend { margin:15px 0 0; font-size:13px; color:var(--sub); }
+  .catalog-toolbar { display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin:15px 0 20px; } input { font:inherit; background:var(--surface); color:var(--ink); border:1px solid var(--line); border-radius:9px; padding:10px 13px; width:min(460px,100%); } #match-count { color:var(--sub); font-size:13px; }
+  .catalog-group { margin:25px 0 0; } .catalog-group h3 { border-bottom:1px solid var(--line); padding-bottom:7px; font-size:17px; } .catalog-group h3 span { color:var(--sub); font-size:13px; font-weight:500; margin-left:6px; }
+  .skill-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:9px; } .skill-item { min-width:0; background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:11px 13px; }
+  .skill-name { font-weight:700; overflow-wrap:anywhere; } .skill-item p { margin:5px 0 0; font-size:13px; } .skill-item details { margin-top:7px; color:var(--sub); font-size:12px; } .skill-item summary { cursor:pointer; } .skill-item details p { font-size:12px; }
+  footer { margin-top:42px; border-top:1px solid var(--line); padding-top:18px; color:var(--sub); font-size:13px; }
+  @media(max-width:1150px) { .flow { grid-template-columns:1fr 24px 1fr; } .flow .stage:nth-of-type(3) { grid-column:1; } .flow .stage:nth-of-type(4) { grid-column:3; } .flow-arrow:nth-of-type(2) { display:none; } .branches { grid-template-columns:repeat(2,1fr); } }
+  @media(max-width:760px) { .wrap { padding:22px 16px 55px; } .flow { display:flex; flex-direction:column; } .flow-arrow { transform:rotate(90deg); } .branches,.foundation,.skill-grid { grid-template-columns:1fr; } .stage p { min-height:0; } }
+</style>
+</head>
+<body>
+<main class="wrap">
+<header>
+  <div><h1>ARIS Skills 架构图</h1><p>从总编排到独立技能的阅读地图。实线顺序表示主工作流；支线和底座表示可选或跨阶段能力。点击技能名称可打开本地 <code>SKILL.md</code>。</p></div>
+  <div class="meta"><a class="badge" href="aris-workflow-stages.html">逐阶段看具体工作流 →</a><span class="badge">源码 3b19a22</span><span class="badge">83 个顶层技能</span><span class="badge">Codex 镜像 83</span><span class="badge">评审适配 8 + 15</span></div>
+</header>
+
+<section aria-labelledby="overview"><h2 id="overview">主线：研究方向到论文</h2><p class="section-note">四段由 <a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/research-pipeline/SKILL.md" title="打开 research-pipeline/SKILL.md">research-pipeline</a> 串联。最后的论文写作在该总流程里由 <code>AUTO_WRITE</code> 控制，也能独立调用。</p>
+  <div class="entry"><strong><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/research-pipeline/SKILL.md" title="打开 research-pipeline/SKILL.md">research-pipeline</a></strong><span>统一编排、传递参数、记录阶段状态和断点恢复</span><em>W1 → W1.5 → W2 → W3</em></div>
+  <div class="flow" style="margin-top:14px"><article class="stage stage-1">
+          <div class="stage-kicker">W1 · 找题与方案</div>
+          <h3><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/idea-discovery/SKILL.md" title="打开 idea-discovery/SKILL.md">idea-discovery</a></h3>
+          <p>方向 → 候选想法、查新、pilot、实验计划</p>
+          <div class="stage-steps"><span class="relation-label">主要调用链</span><a class="seq-link" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/research-lit/SKILL.md" title="打开 research-lit/SKILL.md">research-lit</a><span class="seq-arrow" aria-hidden="true">→</span><a class="seq-link" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/idea-creator/SKILL.md" title="打开 idea-creator/SKILL.md">idea-creator</a><span class="seq-arrow" aria-hidden="true">→</span><a class="seq-link" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/novelty-check/SKILL.md" title="打开 novelty-check/SKILL.md">novelty-check</a><span class="seq-arrow" aria-hidden="true">→</span><a class="seq-link" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/research-review/SKILL.md" title="打开 research-review/SKILL.md">research-review</a><span class="seq-arrow" aria-hidden="true">→</span><a class="seq-link" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/research-refine-pipeline/SKILL.md" title="打开 research-refine-pipeline/SKILL.md">research-refine-pipeline</a></div>
+          <small>refine-pipeline = research-refine → experiment-plan</small>
+        </article><div class="flow-arrow" aria-hidden="true">→</div><article class="stage stage-2">
+          <div class="stage-kicker">W1.5 · 实验桥接</div>
+          <h3><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/experiment-bridge/SKILL.md" title="打开 experiment-bridge/SKILL.md">experiment-bridge</a></h3>
+          <p>实验计划 → 可运行代码与初始结果</p>
+          <div class="stage-steps"><span class="relation-label">主要调用链</span><a class="seq-link" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/run-experiment/SKILL.md" title="打开 run-experiment/SKILL.md">run-experiment</a><span class="seq-arrow" aria-hidden="true">→</span><a class="seq-link" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/monitor-experiment/SKILL.md" title="打开 monitor-experiment/SKILL.md">monitor-experiment</a></div>
+          <small>含代码审查与最小 sanity check</small>
+        </article><div class="flow-arrow" aria-hidden="true">→</div><article class="stage stage-3">
+          <div class="stage-kicker">W2 · 迭代评审</div>
+          <h3><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/auto-review-loop/SKILL.md" title="打开 auto-review-loop/SKILL.md">auto-review-loop</a></h3>
+          <p>评审 → 修复/补实验 → 分析 → 再评审</p>
+          <div class="stage-steps"><span class="relation-label">条件关联能力</span><a class="seq-link" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/novelty-check/SKILL.md" title="打开 novelty-check/SKILL.md">novelty-check</a><span class="seq-arrow" aria-hidden="true">·</span><a class="seq-link" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/run-experiment/SKILL.md" title="打开 run-experiment/SKILL.md">run-experiment</a><span class="seq-arrow" aria-hidden="true">·</span><a class="seq-link" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/analyze-results/SKILL.md" title="打开 analyze-results/SKILL.md">analyze-results</a><span class="seq-arrow" aria-hidden="true">·</span><a class="seq-link" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/monitor-experiment/SKILL.md" title="打开 monitor-experiment/SKILL.md">monitor-experiment</a></div>
+          <small>自身执行外部评审；这些技能按修复需求启用，另有 LLM / MiniMax 后端变体</small>
+        </article><div class="flow-arrow" aria-hidden="true">→</div><article class="stage stage-4">
+          <div class="stage-kicker">W3 · 论文写作</div>
+          <h3><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/paper-writing/SKILL.md" title="打开 paper-writing/SKILL.md">paper-writing</a></h3>
+          <p>研究叙事 → LaTeX、PDF 与投稿审计</p>
+          <div class="stage-steps"><span class="relation-label">主要调用链</span><a class="seq-link" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/paper-plan/SKILL.md" title="打开 paper-plan/SKILL.md">paper-plan</a><span class="seq-arrow" aria-hidden="true">→</span><a class="seq-link" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/paper-figure/SKILL.md" title="打开 paper-figure/SKILL.md">paper-figure</a><span class="seq-arrow" aria-hidden="true">→</span><a class="seq-link" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/paper-write/SKILL.md" title="打开 paper-write/SKILL.md">paper-write</a><span class="seq-arrow" aria-hidden="true">→</span><a class="seq-link" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/paper-compile/SKILL.md" title="打开 paper-compile/SKILL.md">paper-compile</a><span class="seq-arrow" aria-hidden="true">→</span><a class="seq-link" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/auto-paper-improvement-loop/SKILL.md" title="打开 auto-paper-improvement-loop/SKILL.md">auto-paper-improvement-loop</a></div>
+          <small>图示方式可选；另有主张、引用、证明审计</small>
+        </article></div>
+  <p class="legend">图中的子步骤是主要编排关系，简化了条件分支。尤其是数据源、绘图方式、评审后端和投稿审计会按配置与材料条件启用；点击技能可核对原始规则。</p>
+</section>
+
+<section aria-labelledby="branches-title"><h2 id="branches-title">并行支线与后续产物</h2><p class="section-note">这些是从想法或论文分出的路线，不属于每次主流程必经阶段。</p>
+  <div class="branches">
+    <article class="branch"><h3>从已验证想法分出</h3><div class="links"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/grant-proposal/SKILL.md" title="打开 grant-proposal/SKILL.md">grant-proposal</a> <a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/patent-pipeline/SKILL.md" title="打开 patent-pipeline/SKILL.md">patent-pipeline</a></div><p>基金申请是独立产物；专利线先查现有技术，再起草、评审和适配法域。</p><details><summary>展开专利链</summary><div class="stage-steps"><a class="seq-link" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/prior-art-search/SKILL.md" title="打开 prior-art-search/SKILL.md">prior-art-search</a><span class="seq-arrow" aria-hidden="true">→</span><a class="seq-link" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/patent-novelty-check/SKILL.md" title="打开 patent-novelty-check/SKILL.md">patent-novelty-check</a><span class="seq-arrow" aria-hidden="true">→</span><a class="seq-link" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/invention-structuring/SKILL.md" title="打开 invention-structuring/SKILL.md">invention-structuring</a><span class="seq-arrow" aria-hidden="true">→</span><a class="seq-link" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/claims-drafting/SKILL.md" title="打开 claims-drafting/SKILL.md">claims-drafting</a><span class="seq-arrow" aria-hidden="true">→</span><a class="seq-link" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/specification-writing/SKILL.md" title="打开 specification-writing/SKILL.md">specification-writing</a><span class="seq-arrow" aria-hidden="true">→</span><a class="seq-link" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/patent-review/SKILL.md" title="打开 patent-review/SKILL.md">patent-review</a><span class="seq-arrow" aria-hidden="true">→</span><a class="seq-link" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/jurisdiction-format/SKILL.md" title="打开 jurisdiction-format/SKILL.md">jurisdiction-format</a></div></details></article>
+    <article class="branch"><h3>论文之后</h3><div class="links"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/rebuttal/SKILL.md" title="打开 rebuttal/SKILL.md">rebuttal</a> <a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/resubmit-pipeline/SKILL.md" title="打开 resubmit-pipeline/SKILL.md">resubmit-pipeline</a> <a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/paper-talk/SKILL.md" title="打开 paper-talk/SKILL.md">paper-talk</a> <a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/paper-poster-html/SKILL.md" title="打开 paper-poster-html/SKILL.md">paper-poster-html</a></div><p>回应审稿、跨 venue 改投、制作会议报告或海报，按事件单独启动。</p></article>
+    <article class="branch"><h3>理论与领域专线</h3><div class="links"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/proof-orchestrator/SKILL.md" title="打开 proof-orchestrator/SKILL.md">proof-orchestrator</a> <a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/proof-writer/SKILL.md" title="打开 proof-writer/SKILL.md">proof-writer</a> <a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/proof-checker/SKILL.md" title="打开 proof-checker/SKILL.md">proof-checker</a> <a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/dse-loop/SKILL.md" title="打开 dse-loop/SKILL.md">dse-loop</a> <a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/idea-discovery-robot/SKILL.md" title="打开 idea-discovery-robot/SKILL.md">idea-discovery-robot</a></div><p>证明可跨会话推进；体系结构与机器人各有领域化路线。</p></article>
+    <article class="branch"><h3>改进 ARIS 自身</h3><div class="links"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/meta-optimize/SKILL.md" title="打开 meta-optimize/SKILL.md">meta-optimize</a> <span aria-hidden="true">→</span> <a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/meta-apply/SKILL.md" title="打开 meta-apply/SKILL.md">meta-apply</a></div><p>前者分析日志并提出补丁；后者经人和独立评审通过后应用。</p></article>
+  </div>
+</section>
+
+<section aria-labelledby="layers-title"><h2 id="layers-title">贯穿所有阶段的底座</h2>
+  <div class="foundation">
+    <div class="layer"><strong>知识与呈现</strong><p><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/research-wiki/SKILL.md" title="打开 research-wiki/SKILL.md">research-wiki</a> 保存论文、想法、实验和主张的关系；<a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/render-html/SKILL.md" title="打开 render-html/SKILL.md">render-html</a> 把报告转换成可读视图。</p></div>
+    <div class="layer"><strong>执行者与审稿者</strong><p>主技能驱动执行；外部模型、评审适配或确定性校验负责不同质量关口。Codex 镜像是平台版本，不是额外研究阶段。</p></div>
+    <div class="layer"><strong>契约与工具</strong><p><a href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/tree/main/skills/shared-references/">shared-references/</a> 定义跨技能规则；<a href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/tree/main/tools/">tools/</a> 放 API、状态和校验脚本；<a href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/tree/main/mcp-servers/">mcp-servers/</a> 接外部模型。</p></div>
+  </div>
+</section>
+
+<section aria-labelledby="catalog-title"><h2 id="catalog-title">全部 83 个顶层技能</h2><p class="section-note">按原仓库 <a href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/docs/SKILLS_CATALOG.md">SKILLS_CATALOG.md</a> 分组；中文作用是一句话导览，展开可读原仓库的英文说明及外部依赖。</p>
+  <div class="catalog-toolbar"><input id="skill-search" type="search" placeholder="搜索技能名、作用或英文说明…" aria-label="搜索技能"><span id="match-count">显示 83 / 83</span></div>
+  <section class="catalog-group" id="group-1">
+          <h3>工作流编排 <span>16</span></h3>
+          <div class="skill-grid"><article class="skill-item" data-search="research-pipeline 串联找题、实验、评审和论文写作 full chain — workflow 1 → 1.5 → 2 → 3, from research direction to submission-ready paper">
+              <div class="skill-name"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/research-pipeline/SKILL.md" title="打开 research-pipeline/SKILL.md">/research-pipeline</a></div>
+              <p>串联找题、实验、评审和论文写作</p>
+              <details><summary>原仓库说明与依赖</summary><p>Full chain — Workflow 1 → 1.5 → 2 → 3, from research direction to submission-ready paper</p><p><strong>外部依赖：</strong>Codex MCP, LaTeX, GPU</p></details>
+            </article><article class="skill-item" data-search="idea-discovery 从研究方向到候选想法、查新和实验方案 workflow 1 — research-lit → idea-creator → novelty-check → research-review → research-refine-pipeline">
+              <div class="skill-name"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/idea-discovery/SKILL.md" title="打开 idea-discovery/SKILL.md">/idea-discovery</a></div>
+              <p>从研究方向到候选想法、查新和实验方案</p>
+              <details><summary>原仓库说明与依赖</summary><p>Workflow 1 — research-lit → idea-creator → novelty-check → research-review → research-refine-pipeline</p><p><strong>外部依赖：</strong>Codex MCP</p></details>
+            </article><article class="skill-item" data-search="idea-discovery-robot 面向机器人与具身智能的找题流程 workflow 1 adapter for robotics / embodied ai — robotics-aware literature survey + benchmark-anchored ideation">
+              <div class="skill-name"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/idea-discovery-robot/SKILL.md" title="打开 idea-discovery-robot/SKILL.md">/idea-discovery-robot</a></div>
+              <p>面向机器人与具身智能的找题流程</p>
+              <details><summary>原仓库说明与依赖</summary><p>Workflow 1 adapter for robotics / embodied AI — robotics-aware literature survey + benchmark-anchored ideation</p><p><strong>外部依赖：</strong>Codex MCP</p></details>
+            </article><article class="skill-item" data-search="experiment-bridge 把实验计划变为代码、任务和初始结果 workflow 1.5 — read experiment plan → implement code → sanity check → deploy to gpu → collect initial results">
+              <div class="skill-name"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/experiment-bridge/SKILL.md" title="打开 experiment-bridge/SKILL.md">/experiment-bridge</a></div>
+              <p>把实验计划变为代码、任务和初始结果</p>
+              <details><summary>原仓库说明与依赖</summary><p>Workflow 1.5 — read experiment plan → implement code → sanity check → deploy to GPU → collect initial results</p><p><strong>外部依赖：</strong>GPU (local / remote / Vast / Modal)</p></details>
+            </article><article class="skill-item" data-search="auto-review-loop 评审、修复、补实验、再评审的循环 workflow 2 — autonomous review → fix → re-review until positive or max rounds; uses codex mcp reviewer">
+              <div class="skill-name"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/auto-review-loop/SKILL.md" title="打开 auto-review-loop/SKILL.md">/auto-review-loop</a></div>
+              <p>评审、修复、补实验、再评审的循环</p>
+              <details><summary>原仓库说明与依赖</summary><p>Workflow 2 — autonomous review → fix → re-review until positive or max rounds; uses Codex MCP reviewer</p><p><strong>外部依赖：</strong>Codex MCP</p></details>
+            </article><article class="skill-item" data-search="auto-review-loop-llm 使用兼容 openai 接口的评审模型运行循环 same as workflow 2 but uses any openai-compatible llm via llm-chat mcp server">
+              <div class="skill-name"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/auto-review-loop-llm/SKILL.md" title="打开 auto-review-loop-llm/SKILL.md">/auto-review-loop-llm</a></div>
+              <p>使用兼容 OpenAI 接口的评审模型运行循环</p>
+              <details><summary>原仓库说明与依赖</summary><p>Same as Workflow 2 but uses any OpenAI-compatible LLM via llm-chat MCP server</p><p><strong>外部依赖：</strong>llm-chat MCP</p></details>
+            </article><article class="skill-item" data-search="auto-review-loop-minimax 使用 minimax 评审的循环变体 workflow 2 variant pinned to minimax api">
+              <div class="skill-name"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/auto-review-loop-minimax/SKILL.md" title="打开 auto-review-loop-minimax/SKILL.md">/auto-review-loop-minimax</a></div>
+              <p>使用 MiniMax 评审的循环变体</p>
+              <details><summary>原仓库说明与依赖</summary><p>Workflow 2 variant pinned to MiniMax API</p><p><strong>外部依赖：</strong>MiniMax API key</p></details>
+            </article><article class="skill-item" data-search="paper-writing 从研究叙事到 latex 论文和审计 workflow 3 — paper-plan → paper-figure → illustration → paper-write → paper-compile → auto-paper-improvement-loop">
+              <div class="skill-name"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/paper-writing/SKILL.md" title="打开 paper-writing/SKILL.md">/paper-writing</a></div>
+              <p>从研究叙事到 LaTeX 论文和审计</p>
+              <details><summary>原仓库说明与依赖</summary><p>Workflow 3 — paper-plan → paper-figure → illustration → paper-write → paper-compile → auto-paper-improvement-loop</p><p><strong>外部依赖：</strong>Codex MCP, LaTeX</p></details>
+            </article><article class="skill-item" data-search="rebuttal 拆解审稿意见并起草有证据的回复 workflow 4 — parse reviews → atomize → strategy → draft → safety check → stress test → 2-version output → follow-ups">
+              <div class="skill-name"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/rebuttal/SKILL.md" title="打开 rebuttal/SKILL.md">/rebuttal</a></div>
+              <p>拆解审稿意见并起草有证据的回复</p>
+              <details><summary>原仓库说明与依赖</summary><p>Workflow 4 — parse reviews → atomize → strategy → draft → safety check → stress test → 2-version output → follow-ups</p><p><strong>外部依赖：</strong>Codex MCP</p></details>
+            </article><article class="skill-item" data-search="resubmit-pipeline 在不新增实验的约束下适配新投稿 venue workflow 5 — text-only port across venues (no new experiments, no bib edits) — isolation → anonymity → audits --soft-only → microedit → kill-argument gate → compile + push">
+              <div class="skill-name"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/resubmit-pipeline/SKILL.md" title="打开 resubmit-pipeline/SKILL.md">/resubmit-pipeline</a></div>
+              <p>在不新增实验的约束下适配新投稿 venue</p>
+              <details><summary>原仓库说明与依赖</summary><p>Workflow 5 — text-only port across venues (no new experiments, no bib edits) — isolation → anonymity → audits --soft-only → microedit → kill-argument gate → compile + push</p><p><strong>外部依赖：</strong>Codex MCP, LaTeX</p></details>
+            </article><article class="skill-item" data-search="paper-talk 从论文制作并审计会议报告 workflow 6 — paper → slide outline → beamer + pptx → per-page polish → assurance audits → final report">
+              <div class="skill-name"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/paper-talk/SKILL.md" title="打开 paper-talk/SKILL.md">/paper-talk</a></div>
+              <p>从论文制作并审计会议报告</p>
+              <details><summary>原仓库说明与依赖</summary><p>Workflow 6 — paper → slide outline → Beamer + PPTX → per-page polish → assurance audits → final report</p><p><strong>外部依赖：</strong>Codex MCP, LaTeX, python-pptx</p></details>
+            </article><article class="skill-item" data-search="research-refine-pipeline 串联方法精炼与实验规划 sub-pipeline used by /idea-discovery — refine method + plan experiments in one chain">
+              <div class="skill-name"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/research-refine-pipeline/SKILL.md" title="打开 research-refine-pipeline/SKILL.md">/research-refine-pipeline</a></div>
+              <p>串联方法精炼与实验规划</p>
+              <details><summary>原仓库说明与依赖</summary><p>Sub-pipeline used by /idea-discovery — refine method + plan experiments in one chain</p><p><strong>外部依赖：</strong>Codex MCP</p></details>
+            </article><article class="skill-item" data-search="patent-pipeline 串联现有技术、权利要求、说明书与格式 full patent drafting — invention → claims → spec → jurisdiction format (cn / us / ep)">
+              <div class="skill-name"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/patent-pipeline/SKILL.md" title="打开 patent-pipeline/SKILL.md">/patent-pipeline</a></div>
+              <p>串联现有技术、权利要求、说明书与格式</p>
+              <details><summary>原仓库说明与依赖</summary><p>Full patent drafting — invention → claims → spec → jurisdiction format (CN / US / EP)</p><p><strong>外部依赖：</strong>Codex MCP</p></details>
+            </article><article class="skill-item" data-search="dse-loop 运行、分析、调参的设计空间探索循环 autonomous design-space exploration loop for computer architecture / eda — run → analyze → tune → iterate until objective met">
+              <div class="skill-name"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/dse-loop/SKILL.md" title="打开 dse-loop/SKILL.md">/dse-loop</a></div>
+              <p>运行、分析、调参的设计空间探索循环</p>
+              <details><summary>原仓库说明与依赖</summary><p>Autonomous design-space exploration loop for computer architecture / EDA — run → analyze → tune → iterate until objective met</p><p><strong>外部依赖：</strong>Domain-specific tools</p></details>
+            </article><article class="skill-item" data-search="meta-optimize 从使用记录提出技能改进建议 workflow m — analyze aris usage logs and propose skill.md / prompt / default-parameter improvements (outer-loop self-evolution)">
+              <div class="skill-name"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/meta-optimize/SKILL.md" title="打开 meta-optimize/SKILL.md">/meta-optimize</a></div>
+              <p>从使用记录提出技能改进建议</p>
+              <details><summary>原仓库说明与依赖</summary><p>Workflow M — analyze ARIS usage logs and propose SKILL.md / prompt / default-parameter improvements (outer-loop self-evolution)</p><p><strong>外部依赖：</strong>Codex MCP, hook logging</p></details>
+            </article><article class="skill-item" data-search="meta-apply 经人和外部评审通过后应用技能改动 privileged landing gate — the only skill allowed to mutate the skill corpus; lands /meta-optimize patches the human approved, after a fresh cross-model jury pass on the staged diff (read-only producer ≠ privileged applier)">
+              <div class="skill-name"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/meta-apply/SKILL.md" title="打开 meta-apply/SKILL.md">/meta-apply</a></div>
+              <p>经人和外部评审通过后应用技能改动</p>
+              <details><summary>原仓库说明与依赖</summary><p>Privileged landing gate — the only skill allowed to mutate the skill corpus; lands /meta-optimize patches the human approved, after a fresh cross-model jury PASS on the staged diff (read-only producer ≠ privileged applier)</p><p><strong>外部依赖：</strong>Codex MCP, human-in-loop</p></details>
+            </article></div>
+        </section><section class="catalog-group" id="group-2">
+          <h3>文献与检索 <span>11</span></h3>
+          <div class="skill-grid"><article class="skill-item" data-search="research-lit 汇集多来源文献并整理研究地形图 multi-source literature search — zotero / obsidian / local pdfs / web / arxiv / s2 / deepxiv / exa / gemini / openalex with cross-source dedup">
+              <div class="skill-name"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/research-lit/SKILL.md" title="打开 research-lit/SKILL.md">/research-lit</a></div>
+              <p>汇集多来源文献并整理研究地形图</p>
+              <details><summary>原仓库说明与依赖</summary><p>Multi-source literature search — Zotero / Obsidian / local PDFs / web / arXiv / S2 / DeepXiv / Exa / Gemini / OpenAlex with cross-source dedup</p><p><strong>外部依赖：</strong>None (sources gated by MCP / SDK availability)</p></details>
+            </article><article class="skill-item" data-search="arxiv 检索、下载和总结 arxiv 论文 search, download, summarize arxiv papers; multi-result table + per-paper detail">
+              <div class="skill-name"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/arxiv/SKILL.md" title="打开 arxiv/SKILL.md">/arxiv</a></div>
+              <p>检索、下载和总结 arXiv 论文</p>
+              <details><summary>原仓库说明与依赖</summary><p>Search, download, summarize arXiv papers; multi-result table + per-paper detail</p><p><strong>外部依赖：</strong>None</p></details>
+            </article><article class="skill-item" data-search="semantic-scholar 检索正式发表论文与引文元数据 published-venue paper search (ieee / acm / springer) — citation counts, venue metadata, tldr">
+              <div class="skill-name"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/semantic-scholar/SKILL.md" title="打开 semantic-scholar/SKILL.md">/semantic-scholar</a></div>
+              <p>检索正式发表论文与引文元数据</p>
+              <details><summary>原仓库说明与依赖</summary><p>Published-venue paper search (IEEE / ACM / Springer) — citation counts, venue metadata, TLDR</p><p><strong>外部依赖：</strong>None (rate-limited without S2 API key)</p></details>
+            </article><article class="skill-item" data-search="deepxiv 按摘要、章节逐层阅读开放论文 progressive paper reading — search → brief → head → section → trending → web search">
+              <div class="skill-name"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/deepxiv/SKILL.md" title="打开 deepxiv/SKILL.md">/deepxiv</a></div>
+              <p>按摘要、章节逐层阅读开放论文</p>
+              <details><summary>原仓库说明与依赖</summary><p>Progressive paper reading — search → brief → head → section → trending → web search</p><p><strong>外部依赖：</strong>pip install deepxiv-sdk</p></details>
+            </article><article class="skill-item" data-search="exa-search 搜索网页并抽取页面内容 ai-powered broad web search with content extraction — blogs, docs, news, papers">
+              <div class="skill-name"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/exa-search/SKILL.md" title="打开 exa-search/SKILL.md">/exa-search</a></div>
+              <p>搜索网页并抽取页面内容</p>
+              <details><summary>原仓库说明与依赖</summary><p>AI-powered broad web search with content extraction — blogs, docs, news, papers</p><p><strong>外部依赖：</strong>pip install exa-py + EXA_API_KEY</p></details>
+            </article><article class="skill-item" data-search="web-debug-search 跨技术社区检索调试证据 multi-source debugging search across github, stack exchange, chinese technical communities, and general web — routing, compatibility, and discovery-only results">
+              <div class="skill-name"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/web-debug-search/SKILL.md" title="打开 web-debug-search/SKILL.md">/web-debug-search</a></div>
+              <p>跨技术社区检索调试证据</p>
+              <details><summary>原仓库说明与依赖</summary><p>Multi-source debugging search across GitHub, Stack Exchange, Chinese technical communities, and general web — routing, compatibility, and discovery-only results</p><p><strong>外部依赖：</strong>None</p></details>
+            </article><article class="skill-item" data-search="openalex 检索开放引文图和机构信息 openalex api search — 250m+ open citation graph, institutional affiliations, funding data">
+              <div class="skill-name"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/openalex/SKILL.md" title="打开 openalex/SKILL.md">/openalex</a></div>
+              <p>检索开放引文图和机构信息</p>
+              <details><summary>原仓库说明与依赖</summary><p>OpenAlex API search — 250M+ open citation graph, institutional affiliations, funding data</p><p><strong>外部依赖：</strong>pip install requests</p></details>
+            </article><article class="skill-item" data-search="gemini-search 用主题分解与别名扩展发现文献 gemini-driven literature discovery — decomposes topics into sub-problems, aliases, variants">
+              <div class="skill-name"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/gemini-search/SKILL.md" title="打开 gemini-search/SKILL.md">/gemini-search</a></div>
+              <p>用主题分解与别名扩展发现文献</p>
+              <details><summary>原仓库说明与依赖</summary><p>Gemini-driven literature discovery — decomposes topics into sub-problems, aliases, variants</p><p><strong>外部依赖：</strong>gemini-cli v0.40+</p></details>
+            </article><article class="skill-item" data-search="alphaxiv 快速查看单篇论文及回退来源 quick single-paper lookup via alphaxiv — three-tier fallback (overview → markdown → latex source)">
+              <div class="skill-name"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/alphaxiv/SKILL.md" title="打开 alphaxiv/SKILL.md">/alphaxiv</a></div>
+              <p>快速查看单篇论文及回退来源</p>
+              <details><summary>原仓库说明与依赖</summary><p>Quick single-paper lookup via AlphaXiv — three-tier fallback (overview → markdown → LaTeX source)</p><p><strong>外部依赖：</strong>None</p></details>
+            </article><article class="skill-item" data-search="comm-lit-review 通信与无线领域专用文献调研 communications-domain literature review with claude-style knowledge-base-first retrieval — wireless / networking / satellite / wi-fi / cellular">
+              <div class="skill-name"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/comm-lit-review/SKILL.md" title="打开 comm-lit-review/SKILL.md">/comm-lit-review</a></div>
+              <p>通信与无线领域专用文献调研</p>
+              <details><summary>原仓库说明与依赖</summary><p>Communications-domain literature review with Claude-style knowledge-base-first retrieval — wireless / networking / satellite / Wi-Fi / cellular</p><p><strong>外部依赖：</strong>None</p></details>
+            </article><article class="skill-item" data-search="novelty-check 逐项比较研究想法与最接近的已有工作 verify a research idea is novel against recent literature — multi-source search + cross-model verification + closest-prior-work table">
+              <div class="skill-name"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/novelty-check/SKILL.md" title="打开 novelty-check/SKILL.md">/novelty-check</a></div>
+              <p>逐项比较研究想法与最接近的已有工作</p>
+              <details><summary>原仓库说明与依赖</summary><p>Verify a research idea is novel against recent literature — multi-source search + cross-model verification + closest-prior-work table</p><p><strong>外部依赖：</strong>Codex MCP</p></details>
+            </article></div>
+        </section><section class="catalog-group" id="group-3">
+          <h3>选题与方法 <span>5</span></h3>
+          <div class="skill-grid"><article class="skill-item" data-search="idea-creator 生成候选研究想法并设计 pilot brainstorm 8-12 ideas, filter by feasibility, pilot on gpu, rank by signal">
+              <div class="skill-name"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/idea-creator/SKILL.md" title="打开 idea-creator/SKILL.md">/idea-creator</a></div>
+              <p>生成候选研究想法并设计 pilot</p>
+              <details><summary>原仓库说明与依赖</summary><p>Brainstorm 8-12 ideas, filter by feasibility, pilot on GPU, rank by signal</p><p><strong>外部依赖：</strong>Codex MCP, GPU for pilots</p></details>
+            </article><article class="skill-item" data-search="research-refine 围绕问题锚点反复精炼方法 iterative method refinement — problem anchor → up to 5 review rounds → score ≥ 9">
+              <div class="skill-name"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/research-refine/SKILL.md" title="打开 research-refine/SKILL.md">/research-refine</a></div>
+              <p>围绕问题锚点反复精炼方法</p>
+              <details><summary>原仓库说明与依赖</summary><p>Iterative method refinement — problem anchor → up to 5 review rounds → score ≥ 9</p><p><strong>外部依赖：</strong>Codex MCP</p></details>
+            </article><article class="skill-item" data-search="experiment-plan 把研究主张变成实验和消融路线图 turn a refined proposal into a claim-driven experiment roadmap — ablations, budgets, run order">
+              <div class="skill-name"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/experiment-plan/SKILL.md" title="打开 experiment-plan/SKILL.md">/experiment-plan</a></div>
+              <p>把研究主张变成实验和消融路线图</p>
+              <details><summary>原仓库说明与依赖</summary><p>Turn a refined proposal into a claim-driven experiment roadmap — ablations, budgets, run order</p><p><strong>外部依赖：</strong>None</p></details>
+            </article><article class="skill-item" data-search="ablation-planner 根据结果规划必要的消融实验 design ablation studies from a reviewer&#x27;s perspective (after main results pass /result-to-claim)">
+              <div class="skill-name"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/ablation-planner/SKILL.md" title="打开 ablation-planner/SKILL.md">/ablation-planner</a></div>
+              <p>根据结果规划必要的消融实验</p>
+              <details><summary>原仓库说明与依赖</summary><p>Design ablation studies from a reviewer&#x27;s perspective (after main results pass /result-to-claim)</p><p><strong>外部依赖：</strong>Codex MCP</p></details>
+            </article><article class="skill-item" data-search="formula-derivation 整理假设和公式推导链 structure theory derivations — organize assumptions, build derivation chains, turn scattered equations into coherent narrative">
+              <div class="skill-name"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/formula-derivation/SKILL.md" title="打开 formula-derivation/SKILL.md">/formula-derivation</a></div>
+              <p>整理假设和公式推导链</p>
+              <details><summary>原仓库说明与依赖</summary><p>Structure theory derivations — organize assumptions, build derivation chains, turn scattered equations into coherent narrative</p><p><strong>外部依赖：</strong>None</p></details>
+            </article></div>
+        </section><section class="catalog-group" id="group-4">
+          <h3>证明工程 <span>1</span></h3>
+          <div class="skill-grid"><article class="skill-item" data-search="proof-orchestrator 跨会话管理证明任务与证据 stateful proof-run orchestration: run directories, cross-run continuation, manual gpt pro handoff packages, optional deepseek second opinion (additional evidence only — /proof-writer drafts proofs, /proof-checker owns verification and submission acceptance)">
+              <div class="skill-name"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/proof-orchestrator/SKILL.md" title="打开 proof-orchestrator/SKILL.md">/proof-orchestrator</a></div>
+              <p>跨会话管理证明任务与证据</p>
+              <details><summary>原仓库说明与依赖</summary><p>Stateful proof-run orchestration: run directories, cross-run continuation, manual GPT Pro handoff packages, optional DeepSeek second opinion (additional evidence only — /proof-writer drafts proofs, /proof-checker owns verification and submission acceptance)</p><p><strong>外部依赖：</strong>None by default; llm-chat MCP only for optional DeepSeek review</p></details>
+            </article></div>
+        </section><section class="catalog-group" id="group-5">
+          <h3>实验与算力 <span>10</span></h3>
+          <div class="skill-grid"><article class="skill-item" data-search="research-implement-feature 按可运行主干逐步实现研究功能 build from a plain &quot;implement x&quot; request — runnable spine first, then one feature per rung; every under-determined decision declared in an assumption ledger before the code depends on it, plus a cross-model sweep for the ones that slipped through undeclared">
+              <div class="skill-name"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/research-implement-feature/SKILL.md" title="打开 research-implement-feature/SKILL.md">/research-implement-feature</a></div>
+              <p>按可运行主干逐步实现研究功能</p>
+              <details><summary>原仓库说明与依赖</summary><p>Build from a plain &quot;implement X&quot; request — runnable spine first, then one feature per rung; every under-determined decision declared in an assumption ledger before the code depends on it, plus a cross-model sweep for the ones that slipped through undeclared</p><p><strong>外部依赖：</strong>Codex MCP</p></details>
+            </article><article class="skill-item" data-search="run-experiment 在本地或云端部署实验 deploy experiments to local / remote / vast.ai / modal gpu">
+              <div class="skill-name"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/run-experiment/SKILL.md" title="打开 run-experiment/SKILL.md">/run-experiment</a></div>
+              <p>在本地或云端部署实验</p>
+              <details><summary>原仓库说明与依赖</summary><p>Deploy experiments to local / remote / Vast.ai / Modal GPU</p><p><strong>外部依赖：</strong>GPU (configurable)</p></details>
+            </article><article class="skill-item" data-search="monitor-experiment 监控任务并收集结果 monitor running experiments, check progress, collect results">
+              <div class="skill-name"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/monitor-experiment/SKILL.md" title="打开 monitor-experiment/SKILL.md">/monitor-experiment</a></div>
+              <p>监控任务并收集结果</p>
+              <details><summary>原仓库说明与依赖</summary><p>Monitor running experiments, check progress, collect results</p><p><strong>外部依赖：</strong>None</p></details>
+            </article><article class="skill-item" data-search="analyze-results 统计比较实验结果 compute statistics, generate comparison tables, surface insights from experiment results">
+              <div class="skill-name"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/analyze-results/SKILL.md" title="打开 analyze-results/SKILL.md">/analyze-results</a></div>
+              <p>统计比较实验结果</p>
+              <details><summary>原仓库说明与依赖</summary><p>Compute statistics, generate comparison tables, surface insights from experiment results</p><p><strong>外部依赖：</strong>None</p></details>
+            </article><article class="skill-item" data-search="experiment-queue 排队运行多配置实验并处理重试 ssh job queue for multi-seed / multi-config sweeps — oom retry, stale-screen cleanup, wave gating, crash-safe state">
+              <div class="skill-name"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/experiment-queue/SKILL.md" title="打开 experiment-queue/SKILL.md">/experiment-queue</a></div>
+              <p>排队运行多配置实验并处理重试</p>
+              <details><summary>原仓库说明与依赖</summary><p>SSH job queue for multi-seed / multi-config sweeps — OOM retry, stale-screen cleanup, wave gating, crash-safe state</p><p><strong>外部依赖：</strong>SSH access</p></details>
+            </article><article class="skill-item" data-search="vast-gpu 租用和管理 vast.ai gpu rent, manage, destroy on-demand gpu on vast.ai">
+              <div class="skill-name"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/vast-gpu/SKILL.md" title="打开 vast-gpu/SKILL.md">/vast-gpu</a></div>
+              <p>租用和管理 Vast.ai GPU</p>
+              <details><summary>原仓库说明与依赖</summary><p>Rent, manage, destroy on-demand GPU on Vast.ai</p><p><strong>外部依赖：</strong>Vast.ai account + vast-cli</p></details>
+            </article><article class="skill-item" data-search="serverless-modal 在 modal 上运行无服务器 gpu 作业 run gpu workloads on modal — zero-config serverless, auto scale-to-zero">
+              <div class="skill-name"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/serverless-modal/SKILL.md" title="打开 serverless-modal/SKILL.md">/serverless-modal</a></div>
+              <p>在 Modal 上运行无服务器 GPU 作业</p>
+              <details><summary>原仓库说明与依赖</summary><p>Run GPU workloads on Modal — zero-config serverless, auto scale-to-zero</p><p><strong>外部依赖：</strong>pip install modal + Modal account</p></details>
+            </article><article class="skill-item" data-search="qzcli 管理启智平台 gpu 作业 manage gpu compute jobs on the qizhi (启智) platform via qzcli (kubectl-style cli)">
+              <div class="skill-name"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/qzcli/SKILL.md" title="打开 qzcli/SKILL.md">/qzcli</a></div>
+              <p>管理启智平台 GPU 作业</p>
+              <details><summary>原仓库说明与依赖</summary><p>Manage GPU compute jobs on the Qizhi (启智) platform via qzcli (kubectl-style CLI)</p><p><strong>外部依赖：</strong>qzcli installed</p></details>
+            </article><article class="skill-item" data-search="training-check 检查训练指标和 gpu 异常 periodically poll w&amp;b metrics during training — catch nan, loss divergence, idle gpus early">
+              <div class="skill-name"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/training-check/SKILL.md" title="打开 training-check/SKILL.md">/training-check</a></div>
+              <p>检查训练指标和 GPU 异常</p>
+              <details><summary>原仓库说明与依赖</summary><p>Periodically poll W&amp;B metrics during training — catch NaN, loss divergence, idle GPUs early</p><p><strong>外部依赖：</strong>W&amp;B account</p></details>
+            </article><article class="skill-item" data-search="system-profile 分析性能瓶颈与资源使用 profile a target (script / process / gpu / memory / interconnect) with external tools + code instrumentation; produce actionable report">
+              <div class="skill-name"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/system-profile/SKILL.md" title="打开 system-profile/SKILL.md">/system-profile</a></div>
+              <p>分析性能瓶颈与资源使用</p>
+              <details><summary>原仓库说明与依赖</summary><p>Profile a target (script / process / GPU / memory / interconnect) with external tools + code instrumentation; produce actionable report</p><p><strong>外部依赖：</strong>Profiling tools</p></details>
+            </article></div>
+        </section><section class="catalog-group" id="group-6">
+          <h3>评审与证据审计 <span>8</span></h3>
+          <div class="skill-grid"><article class="skill-item" data-search="research-review 获取一次外部模型的深入研究评审 single-round deep critical review from external llm (codex gpt xhigh by default; oracle-pro route for pro tier)">
+              <div class="skill-name"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/research-review/SKILL.md" title="打开 research-review/SKILL.md">/research-review</a></div>
+              <p>获取一次外部模型的深入研究评审</p>
+              <details><summary>原仓库说明与依赖</summary><p>Single-round deep critical review from external LLM (Codex GPT xhigh by default; oracle-pro route for Pro tier)</p><p><strong>外部依赖：</strong>Codex MCP (or Oracle MCP)</p></details>
+            </article><article class="skill-item" data-search="experiment-audit 核查实验代码、结果与评估完整性 cross-model integrity check of experiment code + results — catches fake ground truth, score-normalization fraud, phantom results, scope inflation">
+              <div class="skill-name"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/experiment-audit/SKILL.md" title="打开 experiment-audit/SKILL.md">/experiment-audit</a></div>
+              <p>核查实验代码、结果与评估完整性</p>
+              <details><summary>原仓库说明与依赖</summary><p>Cross-model integrity check of experiment code + results — catches fake ground truth, score-normalization fraud, phantom results, scope inflation</p><p><strong>外部依赖：</strong>Codex MCP</p></details>
+            </article><article class="skill-item" data-search="result-to-claim 判断结果支持哪些研究主张 map experimental results to intended claims — judges what&#x27;s supported, what&#x27;s not, what&#x27;s missing; routes to next action">
+              <div class="skill-name"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/result-to-claim/SKILL.md" title="打开 result-to-claim/SKILL.md">/result-to-claim</a></div>
+              <p>判断结果支持哪些研究主张</p>
+              <details><summary>原仓库说明与依赖</summary><p>Map experimental results to intended claims — judges what&#x27;s supported, what&#x27;s not, what&#x27;s missing; routes to next action</p><p><strong>外部依赖：</strong>Codex MCP</p></details>
+            </article><article class="skill-item" data-search="paper-claim-audit 用原始结果核对论文数字与比较 zero-context numeric verification — every number / comparison / scope claim in the paper checked against raw result files by a fresh reviewer (no confirmation bias)">
+              <div class="skill-name"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/paper-claim-audit/SKILL.md" title="打开 paper-claim-audit/SKILL.md">/paper-claim-audit</a></div>
+              <p>用原始结果核对论文数字与比较</p>
+              <details><summary>原仓库说明与依赖</summary><p>Zero-context numeric verification — every number / comparison / scope claim in the paper checked against raw result files by a fresh reviewer (no confirmation bias)</p><p><strong>外部依赖：</strong>Codex MCP</p></details>
+            </article><article class="skill-item" data-search="citation-audit 核查引文身份、元数据和引用语境 bibliography audit — existence + metadata correctness + context appropriateness for every \cite{}; --soft-only mode for frozen-bib resubmits">
+              <div class="skill-name"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/citation-audit/SKILL.md" title="打开 citation-audit/SKILL.md">/citation-audit</a></div>
+              <p>核查引文身份、元数据和引用语境</p>
+              <details><summary>原仓库说明与依赖</summary><p>Bibliography audit — existence + metadata correctness + context appropriateness for every \cite{}; --soft-only mode for frozen-bib resubmits</p><p><strong>外部依赖：</strong>Codex MCP, web access</p></details>
+            </article><article class="skill-item" data-search="proof-checker 检查证明义务、漏洞和反例 rigorous mathematical proof verification — 20-category issue taxonomy, two-axis severity, side-condition checklists, counterexample red team, proof-obligation ledger">
+              <div class="skill-name"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/proof-checker/SKILL.md" title="打开 proof-checker/SKILL.md">/proof-checker</a></div>
+              <p>检查证明义务、漏洞和反例</p>
+              <details><summary>原仓库说明与依赖</summary><p>Rigorous mathematical proof verification — 20-category issue taxonomy, two-axis severity, side-condition checklists, counterexample red team, proof-obligation ledger</p><p><strong>外部依赖：</strong>Codex MCP</p></details>
+            </article><article class="skill-item" data-search="kill-argument 让独立评审提出最强拒稿理由并应答 two-thread adversarial review — thread 1 writes the strongest 200-word rejection memo; thread 2 (independent) defends point-by-point and surfaces still-unresolved issues">
+              <div class="skill-name"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/kill-argument/SKILL.md" title="打开 kill-argument/SKILL.md">/kill-argument</a></div>
+              <p>让独立评审提出最强拒稿理由并应答</p>
+              <details><summary>原仓库说明与依赖</summary><p>Two-thread adversarial review — Thread 1 writes the strongest 200-word rejection memo; Thread 2 (independent) defends point-by-point and surfaces still-unresolved issues</p><p><strong>外部依赖：</strong>Codex MCP</p></details>
+            </article><article class="skill-item" data-search="integrity-forensics 对证据链做投稿前取证式检查 sha-pinned thin launcher for anti-autoresearch — evidence-ledger forensic sweep (46 patterns, deterministic adjudicator) → typed block/warn/no_new_blocker gate + append-only obligations ledger; default pre-submission self-audit in /paper-writing">
+              <div class="skill-name"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/integrity-forensics/SKILL.md" title="打开 integrity-forensics/SKILL.md">/integrity-forensics</a></div>
+              <p>对证据链做投稿前取证式检查</p>
+              <details><summary>原仓库说明与依赖</summary><p>SHA-pinned thin launcher for Anti-Autoresearch — evidence-ledger forensic sweep (46 patterns, deterministic adjudicator) → typed BLOCK/WARN/NO_NEW_BLOCKER gate + append-only obligations ledger; default pre-submission self-audit in /paper-writing</p><p><strong>外部依赖：</strong>git, Codex MCP (via upstream)</p></details>
+            </article></div>
+        </section><section class="catalog-group" id="group-7">
+          <h3>论文与图表 <span>13</span></h3>
+          <div class="skill-grid"><article class="skill-item" data-search="paper-plan 规划论文结构与主张证据矩阵 generate a structured paper outline from review conclusions + experiment results — claims-evidence matrix, section structure, figure plan, citation scaffolding">
+              <div class="skill-name"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/paper-plan/SKILL.md" title="打开 paper-plan/SKILL.md">/paper-plan</a></div>
+              <p>规划论文结构与主张证据矩阵</p>
+              <details><summary>原仓库说明与依赖</summary><p>Generate a structured paper outline from review conclusions + experiment results — claims-evidence matrix, section structure, figure plan, citation scaffolding</p><p><strong>外部依赖：</strong>None</p></details>
+            </article><article class="skill-item" data-search="paper-write 逐节撰写 latex 论文 section-by-section latex generation (iclr / neurips / icml / ieee / acl / aaai / cvpr / acm mm). anti-hallucination bibtex via dblp / crossref">
+              <div class="skill-name"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/paper-write/SKILL.md" title="打开 paper-write/SKILL.md">/paper-write</a></div>
+              <p>逐节撰写 LaTeX 论文</p>
+              <details><summary>原仓库说明与依赖</summary><p>Section-by-section LaTeX generation (ICLR / NeurIPS / ICML / IEEE / ACL / AAAI / CVPR / ACM MM). Anti-hallucination BibTeX via DBLP / CrossRef</p><p><strong>外部依赖：</strong>None</p></details>
+            </article><article class="skill-item" data-search="paper-figure 从实验数据生成图表与表格 publication-quality matplotlib / seaborn plots + latex comparison tables from experiment results">
+              <div class="skill-name"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/paper-figure/SKILL.md" title="打开 paper-figure/SKILL.md">/paper-figure</a></div>
+              <p>从实验数据生成图表与表格</p>
+              <details><summary>原仓库说明与依赖</summary><p>Publication-quality matplotlib / seaborn plots + LaTeX comparison tables from experiment results</p><p><strong>外部依赖：</strong>matplotlib / seaborn</p></details>
+            </article><article class="skill-item" data-search="figure-spec 把结构化规格确定性渲染为 svg deterministic json → svg renderer for architecture / workflow / pipeline / audit-cascade diagrams. shape-aware edge clipping, self-loops, cjk width estimation">
+              <div class="skill-name"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/figure-spec/SKILL.md" title="打开 figure-spec/SKILL.md">/figure-spec</a></div>
+              <p>把结构化规格确定性渲染为 SVG</p>
+              <details><summary>原仓库说明与依赖</summary><p>Deterministic JSON → SVG renderer for architecture / workflow / pipeline / audit-cascade diagrams. Shape-aware edge clipping, self-loops, CJK width estimation</p><p><strong>外部依赖：</strong>None</p></details>
+            </article><article class="skill-item" data-search="paper-illustration 借助 gemini 生成论文插图 ai architecture + method illustrations via gemini image generation, with claude-supervised iterative refinement">
+              <div class="skill-name"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/paper-illustration/SKILL.md" title="打开 paper-illustration/SKILL.md">/paper-illustration</a></div>
+              <p>借助 Gemini 生成论文插图</p>
+              <details><summary>原仓库说明与依赖</summary><p>AI architecture + method illustrations via Gemini image generation, with Claude-supervised iterative refinement</p><p><strong>外部依赖：</strong>GEMINI_API_KEY</p></details>
+            </article><article class="skill-item" data-search="paper-illustration-image2 借助 codex 图像桥接生成论文插图 codex-native image generation alternative — uses chatgpt plus / pro quota via local codex app-server bridge (no gemini key)">
+              <div class="skill-name"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/paper-illustration-image2/SKILL.md" title="打开 paper-illustration-image2/SKILL.md">/paper-illustration-image2</a></div>
+              <p>借助 Codex 图像桥接生成论文插图</p>
+              <details><summary>原仓库说明与依赖</summary><p>Codex-native image generation alternative — uses ChatGPT Plus / Pro quota via local Codex app-server bridge (no Gemini key)</p><p><strong>外部依赖：</strong>Codex app-server + codex-image2 MCP bridge</p></details>
+            </article><article class="skill-item" data-search="mermaid-diagram 生成并验证 mermaid 图表 generate mermaid diagrams from requirements — flowcharts, sequence, class, er, gantt, with syntax verification">
+              <div class="skill-name"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/mermaid-diagram/SKILL.md" title="打开 mermaid-diagram/SKILL.md">/mermaid-diagram</a></div>
+              <p>生成并验证 Mermaid 图表</p>
+              <details><summary>原仓库说明与依赖</summary><p>Generate Mermaid diagrams from requirements — flowcharts, sequence, class, ER, Gantt, with syntax verification</p><p><strong>外部依赖：</strong>None</p></details>
+            </article><article class="skill-item" data-search="pixel-art 为文档和幻灯片生成像素风 svg generate pixel-art svg illustrations for readmes, docs, slides">
+              <div class="skill-name"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/pixel-art/SKILL.md" title="打开 pixel-art/SKILL.md">/pixel-art</a></div>
+              <p>为文档和幻灯片生成像素风 SVG</p>
+              <details><summary>原仓库说明与依赖</summary><p>Generate pixel-art SVG illustrations for READMEs, docs, slides</p><p><strong>外部依赖：</strong>None</p></details>
+            </article><article class="skill-item" data-search="paper-compile 编译 latex 并检查 pdf compile latex paper to pdf — auto-fix errors, submission readiness checks">
+              <div class="skill-name"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/paper-compile/SKILL.md" title="打开 paper-compile/SKILL.md">/paper-compile</a></div>
+              <p>编译 LaTeX 并检查 PDF</p>
+              <details><summary>原仓库说明与依赖</summary><p>Compile LaTeX paper to PDF — auto-fix errors, submission readiness checks</p><p><strong>外部依赖：</strong>LaTeX (latexmk, pdfinfo)</p></details>
+            </article><article class="skill-item" data-search="auto-paper-improvement-loop 反复审稿、修文和编译 2-round content review + format check — typical 4 / 10 → 8.5 / 10 score lift. --edit-whitelist mode for resubmits">
+              <div class="skill-name"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/auto-paper-improvement-loop/SKILL.md" title="打开 auto-paper-improvement-loop/SKILL.md">/auto-paper-improvement-loop</a></div>
+              <p>反复审稿、修文和编译</p>
+              <details><summary>原仓库说明与依赖</summary><p>2-round content review + format check — typical 4 / 10 → 8.5 / 10 score lift. --edit-whitelist mode for resubmits</p><p><strong>外部依赖：</strong>Codex MCP</p></details>
+            </article><article class="skill-item" data-search="proof-writer 撰写定理和引理的严格证明 draft rigorous mathematical proofs for ml / ai theory — theorems, lemmas, propositions, corollaries; fill in missing steps; formalize sketches">
+              <div class="skill-name"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/proof-writer/SKILL.md" title="打开 proof-writer/SKILL.md">/proof-writer</a></div>
+              <p>撰写定理和引理的严格证明</p>
+              <details><summary>原仓库说明与依赖</summary><p>Draft rigorous mathematical proofs for ML / AI theory — theorems, lemmas, propositions, corollaries; fill in missing steps; formalize sketches</p><p><strong>外部依赖：</strong>None</p></details>
+            </article><article class="skill-item" data-search="writing-systems-papers 系统论文的段落级写作蓝图 paragraph-level structural blueprint for 10-12 page systems papers — page allocation, paragraph templates, writing patterns for osdi / sosp / asplos / nsdi / eurosys">
+              <div class="skill-name"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/writing-systems-papers/SKILL.md" title="打开 writing-systems-papers/SKILL.md">/writing-systems-papers</a></div>
+              <p>系统论文的段落级写作蓝图</p>
+              <details><summary>原仓库说明与依赖</summary><p>Paragraph-level structural blueprint for 10-12 page systems papers — page allocation, paragraph templates, writing patterns for OSDI / SOSP / ASPLOS / NSDI / EuroSys</p><p><strong>外部依赖：</strong>None</p></details>
+            </article><article class="skill-item" data-search="grant-proposal 依据想法和文献起草基金申请 structured grant proposal drafting — kakenhi (jp), nsf (us), nsfc (cn including 面上 / 青年 / 优青 / 杰青 / 海优 / 重点), erc (eu), dfg (de), more">
+              <div class="skill-name"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/grant-proposal/SKILL.md" title="打开 grant-proposal/SKILL.md">/grant-proposal</a></div>
+              <p>依据想法和文献起草基金申请</p>
+              <details><summary>原仓库说明与依赖</summary><p>Structured grant proposal drafting — KAKENHI (JP), NSF (US), NSFC (CN including 面上 / 青年 / 优青 / 杰青 / 海优 / 重点), ERC (EU), DFG (DE), more</p><p><strong>外部依赖：</strong>None</p></details>
+            </article></div>
+        </section><section class="catalog-group" id="group-8">
+          <h3>报告、海报与改投 <span>4</span></h3>
+          <div class="skill-grid"><article class="skill-item" data-search="paper-slides 生成会议幻灯片、讲稿和备注 conference presentation — beamer latex → pdf + editable pptx + speaker notes + full talk script">
+              <div class="skill-name"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/paper-slides/SKILL.md" title="打开 paper-slides/SKILL.md">/paper-slides</a></div>
+              <p>生成会议幻灯片、讲稿和备注</p>
+              <details><summary>原仓库说明与依赖</summary><p>Conference presentation — Beamer LaTeX → PDF + editable PPTX + speaker notes + full talk script</p><p><strong>外部依赖：</strong>LaTeX, python-pptx</p></details>
+            </article><article class="skill-item" data-search="slides-polish 逐页审查与修订演讲幻灯片 per-page codex review + targeted python-pptx / beamer fixes (font scaling, frame resize, banner-as-tcolorbox, italic leak guard, em-dash spacing, cjk font hint, anonymity placeholder discipline)">
+              <div class="skill-name"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/slides-polish/SKILL.md" title="打开 slides-polish/SKILL.md">/slides-polish</a></div>
+              <p>逐页审查与修订演讲幻灯片</p>
+              <details><summary>原仓库说明与依赖</summary><p>Per-page Codex review + targeted python-pptx / Beamer fixes (font scaling, frame resize, banner-as-tcolorbox, italic leak guard, em-dash spacing, CJK font hint, anonymity placeholder discipline)</p><p><strong>外部依赖：</strong>Codex MCP, python-pptx</p></details>
+            </article><article class="skill-item" data-search="paper-poster-html 用 html/css 制作可打印会议海报 default conference poster — single html/css file with measurement-driven hard gates (two-hue tokens, real paper figures with provenance, anti-patch-loop fix vocabulary) → print-ready pdf via headless chromium">
+              <div class="skill-name"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/paper-poster-html/SKILL.md" title="打开 paper-poster-html/SKILL.md">/paper-poster-html</a></div>
+              <p>用 HTML/CSS 制作可打印会议海报</p>
+              <details><summary>原仓库说明与依赖</summary><p>Default conference poster — single HTML/CSS file with measurement-driven hard gates (two-hue tokens, real paper figures with provenance, anti-patch-loop fix vocabulary) → print-ready PDF via headless Chromium</p><p><strong>外部依赖：</strong>Playwright (Chromium), PyMuPDF</p></details>
+            </article><article class="skill-item" data-search="paper-poster 旧海报入口，转向 paper-poster-html deprecated — redirect stub to /paper-poster-html (legacy latex pipeline retired; in git history)">
+              <div class="skill-name"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/paper-poster/SKILL.md" title="打开 paper-poster/SKILL.md">/paper-poster</a></div>
+              <p>旧海报入口，转向 paper-poster-html</p>
+              <details><summary>原仓库说明与依赖</summary><p>DEPRECATED — redirect stub to /paper-poster-html (legacy LaTeX pipeline retired; in git history)</p><p><strong>外部依赖：</strong>—</p></details>
+            </article></div>
+        </section><section class="catalog-group" id="group-9">
+          <h3>专利 <span>9</span></h3>
+          <div class="skill-grid"><article class="skill-item" data-search="invention-structuring 把原始想法整理为发明披露 structure a raw invention idea into a formal invention disclosure">
+              <div class="skill-name"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/invention-structuring/SKILL.md" title="打开 invention-structuring/SKILL.md">/invention-structuring</a></div>
+              <p>把原始想法整理为发明披露</p>
+              <details><summary>原仓库说明与依赖</summary><p>Structure a raw invention idea into a formal invention disclosure</p><p><strong>外部依赖：</strong>None</p></details>
+            </article><article class="skill-item" data-search="claims-drafting 起草独立和从属权利要求 draft patent claims — independent + dependent, with anti-pattern checks">
+              <div class="skill-name"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/claims-drafting/SKILL.md" title="打开 claims-drafting/SKILL.md">/claims-drafting</a></div>
+              <p>起草独立和从属权利要求</p>
+              <details><summary>原仓库说明与依赖</summary><p>Draft patent claims — independent + dependent, with anti-pattern checks</p><p><strong>外部依赖：</strong>None</p></details>
+            </article><article class="skill-item" data-search="embodiment-description 撰写专利实施例 write detailed embodiment descriptions for the patent specification">
+              <div class="skill-name"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/embodiment-description/SKILL.md" title="打开 embodiment-description/SKILL.md">/embodiment-description</a></div>
+              <p>撰写专利实施例</p>
+              <details><summary>原仓库说明与依赖</summary><p>Write detailed embodiment descriptions for the patent specification</p><p><strong>外部依赖：</strong>None</p></details>
+            </article><article class="skill-item" data-search="specification-writing 撰写专利说明书 full patent specification from claims + invention disclosure">
+              <div class="skill-name"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/specification-writing/SKILL.md" title="打开 specification-writing/SKILL.md">/specification-writing</a></div>
+              <p>撰写专利说明书</p>
+              <details><summary>原仓库说明与依赖</summary><p>Full patent specification from claims + invention disclosure</p><p><strong>外部依赖：</strong>None</p></details>
+            </article><article class="skill-item" data-search="figure-description 撰写专利附图说明 generate formal drawing descriptions for patent figures">
+              <div class="skill-name"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/figure-description/SKILL.md" title="打开 figure-description/SKILL.md">/figure-description</a></div>
+              <p>撰写专利附图说明</p>
+              <details><summary>原仓库说明与依赖</summary><p>Generate formal drawing descriptions for patent figures</p><p><strong>外部依赖：</strong>None</p></details>
+            </article><article class="skill-item" data-search="prior-art-search 检索相关专利和学术现有技术 search patent databases + academic literature for prior art relevant to an invention">
+              <div class="skill-name"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/prior-art-search/SKILL.md" title="打开 prior-art-search/SKILL.md">/prior-art-search</a></div>
+              <p>检索相关专利和学术现有技术</p>
+              <details><summary>原仓库说明与依赖</summary><p>Search patent databases + academic literature for prior art relevant to an invention</p><p><strong>外部依赖：</strong>None (web access)</p></details>
+            </article><article class="skill-item" data-search="patent-novelty-check 评估专利新颖性与非显而易见性 assess patent novelty and non-obviousness against prior art (patentability evaluation)">
+              <div class="skill-name"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/patent-novelty-check/SKILL.md" title="打开 patent-novelty-check/SKILL.md">/patent-novelty-check</a></div>
+              <p>评估专利新颖性与非显而易见性</p>
+              <details><summary>原仓库说明与依赖</summary><p>Assess patent novelty and non-obviousness against prior art (patentability evaluation)</p><p><strong>外部依赖：</strong>Codex MCP</p></details>
+            </article><article class="skill-item" data-search="patent-review 模拟外部审查员批判专利申请 external patent-examiner-style critical review of a patent application">
+              <div class="skill-name"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/patent-review/SKILL.md" title="打开 patent-review/SKILL.md">/patent-review</a></div>
+              <p>模拟外部审查员批判专利申请</p>
+              <details><summary>原仓库说明与依赖</summary><p>External patent-examiner-style critical review of a patent application</p><p><strong>外部依赖：</strong>Codex MCP</p></details>
+            </article><article class="skill-item" data-search="jurisdiction-format 适配中国、美国或欧洲申请格式 compile patent application into jurisdiction-specific filing format (cn / us / ep)">
+              <div class="skill-name"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/jurisdiction-format/SKILL.md" title="打开 jurisdiction-format/SKILL.md">/jurisdiction-format</a></div>
+              <p>适配中国、美国或欧洲申请格式</p>
+              <details><summary>原仓库说明与依赖</summary><p>Compile patent application into jurisdiction-specific filing format (CN / US / EP)</p><p><strong>外部依赖：</strong>None</p></details>
+            </article></div>
+        </section><section class="catalog-group" id="group-10">
+          <h3>知识与工具集成 <span>6</span></h3>
+          <div class="skill-grid"><article class="skill-item" data-search="research-wiki 跨会话保存论文、想法、实验和主张 persistent research knowledge base — papers / ideas / experiments / claims with typed relationships. workflow hooks auto-ingest across the research lifecycle">
+              <div class="skill-name"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/research-wiki/SKILL.md" title="打开 research-wiki/SKILL.md">/research-wiki</a></div>
+              <p>跨会话保存论文、想法、实验和主张</p>
+              <details><summary>原仓库说明与依赖</summary><p>Persistent research knowledge base — papers / ideas / experiments / claims with typed relationships. Workflow hooks auto-ingest across the research lifecycle</p><p><strong>外部依赖：</strong>None (pure Python stdlib)</p></details>
+            </article><article class="skill-item" data-search="wiki-enrich 补充知识库中单篇论文的空白内容 fill the per-paper todo sections that ingest_paper leaves as scaffolds (karpathy llm-wiki principle). fetch chain alphaxiv → deepxiv → arxiv → page abstract; idempotent by default, --force to rewrite">
+              <div class="skill-name"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/wiki-enrich/SKILL.md" title="打开 wiki-enrich/SKILL.md">/wiki-enrich</a></div>
+              <p>补充知识库中单篇论文的空白内容</p>
+              <details><summary>原仓库说明与依赖</summary><p>Fill the per-paper TODO sections that ingest_paper leaves as scaffolds (Karpathy LLM-wiki principle). Fetch chain alphaxiv → deepxiv → arXiv → page abstract; idempotent by default, --force to rewrite</p><p><strong>外部依赖：</strong>Python stdlib + WebFetch</p></details>
+            </article><article class="skill-item" data-search="render-html 将研究报告渲染为单文件 html render aris markdown / json artifacts into reviewed single-file html views for human reading">
+              <div class="skill-name"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/render-html/SKILL.md" title="打开 render-html/SKILL.md">/render-html</a></div>
+              <p>将研究报告渲染为单文件 HTML</p>
+              <details><summary>原仓库说明与依赖</summary><p>Render ARIS Markdown / JSON artifacts into reviewed single-file HTML views for human reading</p><p><strong>外部依赖：</strong>Python stdlib; Codex MCP for review gate</p></details>
+            </article><article class="skill-item" data-search="overleaf-sync 同步本地论文与 overleaf 项目 two-way sync between local paper directory and overleaf project via overleaf git bridge (premium) — setup / pull (diff protocol) / push (confirmation gate) / status">
+              <div class="skill-name"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/overleaf-sync/SKILL.md" title="打开 overleaf-sync/SKILL.md">/overleaf-sync</a></div>
+              <p>同步本地论文与 Overleaf 项目</p>
+              <details><summary>原仓库说明与依赖</summary><p>Two-way sync between local paper directory and Overleaf project via Overleaf Git bridge (Premium) — setup / pull (diff protocol) / push (confirmation gate) / status</p><p><strong>外部依赖：</strong>Overleaf Premium + macOS Keychain</p></details>
+            </article><article class="skill-item" data-search="feishu-notify 通过飞书发送通知或交互消息 send notifications to feishu / lark — push-only (webhook) or interactive (bidirectional) modes. off by default">
+              <div class="skill-name"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/feishu-notify/SKILL.md" title="打开 feishu-notify/SKILL.md">/feishu-notify</a></div>
+              <p>通过飞书发送通知或交互消息</p>
+              <details><summary>原仓库说明与依赖</summary><p>Send notifications to Feishu / Lark — push-only (webhook) or interactive (bidirectional) modes. Off by default</p><p><strong>外部依赖：</strong>Feishu webhook URL</p></details>
+            </article><article class="skill-item" data-search="interview-cheatsheet 生成机器学习面试复习资料 generate long-form chinese ml / llm interview-prep cheat sheets with formulas, code, q&amp;a, review, and html output">
+              <div class="skill-name"><a class="" href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/interview-cheatsheet/SKILL.md" title="打开 interview-cheatsheet/SKILL.md">/interview-cheatsheet</a></div>
+              <p>生成机器学习面试复习资料</p>
+              <details><summary>原仓库说明与依赖</summary><p>Generate long-form Chinese ML / LLM interview-prep cheat sheets with formulas, code, Q&amp;A, review, and HTML output</p><p><strong>外部依赖：</strong>Codex MCP, Python</p></details>
+            </article></div>
+        </section>
+</section>
+
+<footer>来源：本地 ARIS 仓库 <code>3b19a22</code> 的 <a href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/AGENT_GUIDE.md">AGENT_GUIDE.md</a>、<a href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/docs/SKILLS_CATALOG.md">SKILLS_CATALOG.md</a> 与各 <code>SKILL.md</code>。主树 83 个技能；<code>skills-codex/</code> 的 83 个镜像及 Claude/Gemini 审稿覆盖层共 106 个文件，已单独计数，不重复画成科研阶段。</footer>
+</main>
+<script>
+const input = document.getElementById('skill-search');
+const cards = [...document.querySelectorAll('.skill-item')];
+const groups = [...document.querySelectorAll('.catalog-group')];
+input.addEventListener('input', () => {
+  const query = input.value.trim().toLocaleLowerCase();
+  let shown = 0;
+  for (const card of cards) {
+    const visible = !query || card.dataset.search.includes(query);
+    card.hidden = !visible;
+    if (visible) shown++;
+  }
+  for (const group of groups) {
+    group.hidden = ![...group.querySelectorAll('.skill-item')].some(card => !card.hidden);
+  }
+  document.getElementById('match-count').textContent = `显示 ${shown} / ${cards.length}`;
+});
+</script>
+</body>
+</html>

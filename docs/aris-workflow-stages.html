@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ARIS 工作流阶段详解</title>
+  <style>
+    :root { color-scheme: light dark; --bg:#f5f7fb; --surface:#fff; --ink:#172237; --sub:#526078; --line:#d9e0ea; --blue:#386ec3; --green:#2d916f; --amber:#a36b1e; --violet:#8b5aa7; --soft:#eaf0ff; }
+    @media(prefers-color-scheme:dark) { :root { --bg:#111823; --surface:#1a2534; --ink:#eff4fc; --sub:#adbbcd; --line:#344258; --blue:#82aaf3; --green:#75c6a4; --amber:#e5b770; --violet:#c59ee1; --soft:#243555; } }
+    * { box-sizing:border-box; } html { scroll-behavior:smooth; } body { margin:0; color:var(--ink); background:var(--bg); font:15px/1.65 system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif; }
+    a { color:var(--blue); text-decoration:none; } a:hover { text-decoration:underline; } code { background:var(--soft); padding:1px 4px; border-radius:4px; overflow-wrap:anywhere; }
+    .shell { max-width:1480px; margin:auto; padding:30px 28px 90px; display:grid; grid-template-columns:230px minmax(0,1fr); gap:30px; }
+    .toc { align-self:start; position:sticky; top:20px; border-right:1px solid var(--line); padding-right:20px; max-height:calc(100vh - 40px); overflow:auto; }
+    .toc strong { display:block; font-size:13px; color:var(--sub); text-transform:uppercase; letter-spacing:.07em; margin-bottom:10px; }
+    .toc a { display:block; padding:7px 9px; color:var(--ink); border-radius:8px; font-size:13px; }
+    .toc a:hover { background:var(--soft); text-decoration:none; } .toc hr { border:0; border-top:1px solid var(--line); margin:10px 0; }
+    main { min-width:0; } .back { font-size:13px; } h1 { font-size:clamp(30px,3.5vw,45px); line-height:1.16; margin:15px 0 10px; letter-spacing:-.02em; }
+    .lede { color:var(--sub); max-width:850px; margin:0; } .pills { display:flex; flex-wrap:wrap; gap:7px; margin-top:16px; } .pill { background:var(--soft); border-radius:999px; padding:4px 10px; font-size:12px; font-weight:650; }
+    h2 { margin:44px 0 8px; font-size:26px; line-height:1.3; } h3 { margin:20px 0 6px; font-size:16px; } p { margin:7px 0 12px; }
+    .overview { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; margin-top:26px; }
+    .overview a { display:block; padding:14px; background:var(--surface); border:1px solid var(--line); border-top:4px solid var(--blue); border-radius:11px; color:var(--ink); font-weight:750; }
+    .overview a:nth-child(2) { border-top-color:var(--green); }.overview a:nth-child(3) { border-top-color:var(--amber); }.overview a:nth-child(4) { border-top-color:var(--violet); }
+    .overview span { display:block; font-weight:400; font-size:12px; color:var(--sub); margin-top:3px; }
+    .notice { border-left:4px solid var(--amber); background:var(--surface); border-radius:8px; padding:13px 16px; margin:24px 0; }
+    .stage { background:var(--surface); border:1px solid var(--line); border-radius:15px; padding:24px 27px; margin-top:26px; scroll-margin-top:22px; }
+    .stage.w1 { border-top:5px solid var(--blue); }.stage.w15 { border-top:5px solid var(--green); }.stage.w2 { border-top:5px solid var(--amber); }.stage.w3 { border-top:5px solid var(--violet); }
+    .stage h2 { margin:0 0 5px; }.stage-sub { color:var(--sub); margin:0 0 19px; } .label { text-transform:uppercase; letter-spacing:.06em; font-weight:800; font-size:11px; color:var(--sub); }
+    .io { display:grid; grid-template-columns:1fr 1fr; gap:13px; margin:18px 0 23px; }.io>div { background:var(--bg); border:1px solid var(--line); border-radius:10px; padding:12px 14px; }
+    .io p { margin:4px 0 0; font-size:13px; }.steps { list-style:none; margin:0; padding:0; counter-reset:step; }
+    .steps li { position:relative; border-left:2px solid var(--line); padding:0 0 18px 24px; margin-left:12px; }.steps li:last-child { border-left-color:transparent; padding-bottom:0; }
+    .steps li::before { counter-increment:step; content:counter(step); position:absolute; top:0; left:-13px; width:24px; height:24px; display:grid; place-items:center; background:var(--soft); color:var(--ink); border:1px solid var(--line); border-radius:50%; font-size:12px; font-weight:800; }
+    .steps strong { display:block; line-height:1.45; }.steps p { margin:3px 0 0; font-size:13px; color:var(--sub); }.steps a { font-weight:700; }
+    .gate { display:flex; align-items:flex-start; gap:10px; background:var(--soft); border-radius:9px; padding:12px 14px; margin-top:20px; font-size:13px; }.gate strong { min-width:60px; }
+    .artifact { margin-top:17px; font-size:13px; color:var(--sub); }.artifact strong { color:var(--ink); }.source { margin-top:18px; border-top:1px solid var(--line); padding-top:12px; font-size:12px; color:var(--sub); }
+    .secondary { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; margin-top:18px; }.mini { background:var(--surface); border:1px solid var(--line); border-radius:11px; padding:15px; }.mini h3 { margin:0 0 6px; }.mini p { color:var(--sub); font-size:13px; margin:0 0 8px; }.mini ol { padding-left:19px; font-size:13px; margin:0 0 10px; }
+    .handoff { width:100%; border-collapse:collapse; background:var(--surface); font-size:13px; }.handoff th,.handoff td { border-bottom:1px solid var(--line); text-align:left; padding:9px 10px; vertical-align:top; }.handoff th { color:var(--sub); }
+    footer { margin-top:44px; color:var(--sub); border-top:1px solid var(--line); padding-top:17px; font-size:13px; }
+    @media(max-width:1050px) { .shell { grid-template-columns:1fr; } .toc { position:static; max-height:none; border-right:0; border-bottom:1px solid var(--line); padding:0 0 12px; display:flex; flex-wrap:wrap; align-items:center; gap:2px 8px; } .toc strong { width:100%; } .toc a { display:inline-block; } .toc hr { display:none; } }
+    @media(max-width:680px) { .shell { padding:20px 15px 60px; } .overview,.secondary,.io { grid-template-columns:1fr; } .stage { padding:18px; } }
+  </style>
+</head>
+<body>
+<div class="shell">
+  <nav class="toc" aria-label="阶段导航">
+    <strong>阶段导航</strong>
+    <a href="aris-skills-architecture.html">← 总架构图</a>
+    <a href="#overview">总流程与默认行为</a>
+    <hr>
+    <a href="#w1">W1 · 找题与方案</a>
+    <a href="#w15">W1.5 · 实验桥接</a>
+    <a href="#w2">W2 · 评审循环</a>
+    <a href="#w3">W3 · 论文写作</a>
+    <hr>
+    <a href="#after">W4–W6 · 论文之后</a>
+    <a href="#branches">独立支线</a>
+    <a href="#handoff">阶段间文件</a>
+  </nav>
+
+  <main>
+    <a class="back" href="aris-skills-architecture.html">← 返回 ARIS Skills 架构图</a>
+    <h1>ARIS 工作流阶段详解</h1>
+    <p class="lede">按各个编排技能的 <code>SKILL.md</code> 展开：每阶段读什么、依次做什么、产出什么、什么情况继续或停下。点击技能名称可打开克隆仓库中的原文件。</p>
+    <div class="pills"><span class="pill">源码快照 3b19a22</span><span class="pill">主线 W1 → W1.5 → W2 → W3</span><span class="pill">本页是流程说明，不是运行记录</span></div>
+
+    <section id="overview">
+      <h2>总流程与默认行为</h2>
+      <p><a href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/research-pipeline/SKILL.md"><code>/research-pipeline</code></a> 串起四段主流程，并将参数与阶段产物传给下一段。它先做 W1、W1.5、W2，然后整理 <code>NARRATIVE_REPORT.md</code>；<code>AUTO_WRITE=false</code> 是默认值，因此 W3 论文写作通常需要另行启动或显式打开。运行状态保存在 <code>.aris/runs/&lt;run_id&gt;.json</code>，阶段有“产物写完”和“通过验收”两种不同状态。</p>
+      <div class="overview"><a href="#w1">W1 找题与方案<span>方向 → idea 与实验计划</span></a><a href="#w15">W1.5 实验桥接<span>计划 → 代码与初始结果</span></a><a href="#w2">W2 评审循环<span>结果 → 修复与可支撑主张</span></a><a href="#w3">W3 论文写作<span>叙事 → 论文与审计</span></a></div>
+      <div class="notice"><strong>阅读边界：</strong>下面描述的是仓库要求代理执行的工作流。模型评审、脚本校验和人工科学判断负责不同问题；某个阶段写了“完成”并不能单独证明论文或研究结论可靠。</div>
+    </section>
+
+    <section class="stage w1" id="w1">
+      <h2>W1 · 找题与方案</h2><p class="stage-sub"><a href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/idea-discovery/SKILL.md"><code>/idea-discovery</code></a>：从宽泛研究方向形成推荐 idea 和下一步实验路线。</p>
+      <div class="io"><div><span class="label">输入</span><p>研究方向；可选 <code>RESEARCH_BRIEF.md</code>、参考论文、已有结果，以及时间、数据、算力和 venue 约束。</p></div><div><span class="label">核心产物</span><p><code>idea-stage/IDEA_REPORT.md</code>、<code>refine-logs/FINAL_PROPOSAL.md</code>、<code>refine-logs/EXPERIMENT_PLAN.md</code> 与 tracker。</p></div></div>
+      <ol class="steps">
+        <li><strong>载入边界与参考论文</strong><p>先读研究简报；有参考论文时提炼方法、结果、局限与可能延伸。没有简报则从用户输入确定方向。</p></li>
+        <li><strong><a href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/research-lit/SKILL.md">research-lit</a>：画文献地形图</strong><p>汇集个人文献库、本地 PDF 与外部检索，归纳子方向、已有方法、分歧和待验证问题。未指定 <code>sources:</code> 时，W1 传入 <code>all, gemini</code>；不可用来源按规则跳过。</p></li>
+        <li><strong><a href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/idea-creator/SKILL.md">idea-creator</a>：发散、初筛与 pilot</strong><p>提出候选假设，记录最小实验、贡献、风险和成本；合并重复项，对优选想法做低成本 pilot。阶段结果折入同一份 <code>IDEA_REPORT.md</code>。</p></li>
+        <li><strong><a href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/novelty-check/SKILL.md">novelty-check</a>：逐项查新</strong><p>对优选想法检索最接近的已有工作，比较核心主张和可核对的差异；已有论文确实覆盖的想法从候选中剔除。</p></li>
+        <li><strong><a href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/research-review/SKILL.md">research-review</a>：外部批判</strong><p>请外部 reviewer 指出最强支持理由、主要风险和最便宜的区分性实验，把评审结论写回报告。</p></li>
+        <li><strong><a href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/research-refine-pipeline/SKILL.md">research-refine-pipeline</a>：方法精炼与实验规划</strong><p>先以 <a href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/research-refine/SKILL.md">research-refine</a> 固定问题锚点与方法主张，再由 <a href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/experiment-plan/SKILL.md">experiment-plan</a> 排出与主张对应的实验、消融、预算和顺序。</p></li>
+        <li><strong>汇总与交接</strong><p>在 <code>IDEA_REPORT.md</code> 保留排名、查新、pilot、评审和淘汰理由；有推荐想法时另写 <code>idea-stage/docs/research_contract.md</code>，让下一阶段只读取已选主张与最低证据要求。</p></li>
+      </ol>
+      <div class="gate"><strong>继续条件</strong><span><code>AUTO_PROCEED=true</code> 时各选择点报告自动选择并继续；设为 <code>false</code> 才等待研究者选择。阶段证据 gate 缺失时报告 <code>BLOCKED</code>，不能仅靠勾选步骤声称完成。</span></div>
+      <p class="artifact"><strong>建议先看：</strong><code>IDEA_REPORT.md</code> 的候选与淘汰理由、<code>research_contract.md</code> 的核心主张，以及 <code>EXPERIMENT_PLAN.md</code> 是否真的能检验主张。</p>
+      <p class="source">依据：<a href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/idea-discovery/SKILL.md">idea-discovery/SKILL.md</a> 的 Phase 0–5.6。</p>
+    </section>
+
+    <section class="stage w15" id="w15">
+      <h2>W1.5 · 实验桥接</h2><p class="stage-sub"><a href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/experiment-bridge/SKILL.md"><code>/experiment-bridge</code></a>：把纸面实验计划落成可执行任务并收集第一批结果。</p>
+      <div class="io"><div><span class="label">输入</span><p><code>refine-logs/EXPERIMENT_PLAN.md</code> 为首选；还可读 tracker、最终方案、研究契约和 W1 报告。</p></div><div><span class="label">核心产物</span><p>实验脚本、初始结果、<code>refine-logs/EXPERIMENT_RESULTS.md</code> 与更新后的 <code>EXPERIMENT_TRACKER.md</code>。</p></div></div>
+      <ol class="steps">
+        <li><strong>拆计划</strong><p>读出 sanity、baseline、主方法和消融的运行顺序，以及数据集、指标、seed、成功标准和预计 GPU 小时。</p></li>
+        <li><strong>实现并审查代码</strong><p>复用已有代码，补训练和评估脚本、日志及机器可读结果。默认开启跨模型代码审查，重点查方法实现、数据划分、指标和 ground truth。</p></li>
+        <li><strong>先跑最小 sanity 实验</strong><p>确认训练循环、指标、显存和输出格式。失败时最多尝试两次局部修补和两次干净重做；仍失败就停下并报告错误及尝试。</p></li>
+        <li><strong>按里程碑部署与监控</strong><p>小批任务交给 <a href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/run-experiment/SKILL.md">run-experiment</a>；大量多 seed、多配置或存在阶段依赖时转向 <a href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/experiment-queue/SKILL.md">experiment-queue</a>。用 <a href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/monitor-experiment/SKILL.md">monitor-experiment</a> 跟踪。</p></li>
+        <li><strong>收结果并判断后续实验</strong><p>把 JSON/CSV 和日志汇入 tracker，对照预先写好的成功标准；若主结果为正，可调用 <a href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/ablation-planner/SKILL.md">ablation-planner</a> 补消融计划。</p></li>
+      </ol>
+      <div class="gate"><strong>继续条件</strong><span>默认 <code>AUTO_DEPLOY=true</code>，实现和审查后会部署；设为 <code>false</code> 才在部署前停下。Sanity 未通过或必跑实验未产出可信结果时，不应把该阶段当成“已准备好进入 W2”。</span></div>
+      <p class="artifact"><strong>建议先看：</strong>实验计划与真实运行配置是否一致；结果文件能否复算报告中的指标。</p>
+      <p class="source">依据：<a href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/experiment-bridge/SKILL.md">experiment-bridge/SKILL.md</a> 的 Phase 1–6。</p>
+    </section>
+
+    <section class="stage w2" id="w2">
+      <h2>W2 · 评审与修复循环</h2><p class="stage-sub"><a href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/auto-review-loop/SKILL.md"><code>/auto-review-loop</code></a>：让外部评审指出弱点，修复后带着新证据再次评审。</p>
+      <div class="io"><div><span class="label">输入</span><p>当前论文或研究叙事、实验结果、历史评审与待解决问题；中断时读 <code>review-stage/REVIEW_STATE.json</code>。</p></div><div><span class="label">核心产物</span><p><code>review-stage/AUTO_REVIEW.md</code>、<code>REVIEW_STATE.json</code>，以及有条件产生的 <code>CLAIMS_FROM_RESULTS.md</code>。</p></div></div>
+      <ol class="steps">
+        <li><strong>初始化或恢复</strong><p>读取当前研究材料、结果和已有评审；若状态文件显示近期未完成运行，则从下一轮恢复，而非从头开始。</p></li>
+        <li><strong>外部评审</strong><p>按当前平台与配置选择 reviewer，得到原始评分、<code>ready / almost / not ready</code> 判定及具体批评；保留 reviewer 原文和追踪记录。</p></li>
+        <li><strong>独立停止判定</strong><p>用 <code>review_gate.py</code> 判定当前评审是否足够：默认需分数至少 6/10，且 verdict 为 <code>ready</code> 或 <code>almost</code>，两项同时成立。不同评审后端还有各自的身份与最终裁决规则。</p></li>
+        <li><strong>未通过则修复</strong><p>按严重度改代码、补分析、补可负担的实验或校正研究叙事；若启动实验，等真实结果回来再进入下一轮评审。</p></li>
+        <li><strong>记录每轮与交接</strong><p>把原始评审、改动和结果追加到 <code>AUTO_REVIEW.md</code>，保存可恢复状态。结束时尝试用 <a href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/result-to-claim/SKILL.md">result-to-claim</a> 判断结果实际支持哪些论文主张。</p></li>
+      </ol>
+      <div class="gate"><strong>继续条件</strong><span>默认最多 4 轮。到上限也会结束，但若没有获得符合规则的积极评审，必须列出剩余阻碍；这与“已通过”是两种状态。<code>HUMAN_CHECKPOINT=true</code> 时每轮评审后可由研究者决定修复方向。</span></div>
+      <p class="artifact"><strong>建议先看：</strong>原始 reviewer 意见、实际修改后的证据，以及最终停止原因；单看分数轨迹不足以判断研究是否成熟。</p>
+      <p class="source">依据：<a href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/auto-review-loop/SKILL.md">auto-review-loop/SKILL.md</a> 的初始化、循环、停止 gate 与终止段。</p>
+    </section>
+
+    <section class="stage w3" id="w3">
+      <h2>W3 · 论文写作与审计</h2><p class="stage-sub"><a href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/paper-writing/SKILL.md"><code>/paper-writing</code></a>：把研究叙事变为可编译论文，并按 assurance 等级运行证据检查。</p>
+      <div class="io"><div><span class="label">输入</span><p><code>NARRATIVE_REPORT.md</code>、图表和结果文件、目标 venue；可选写作风格参考。必须有真实研究内容。</p></div><div><span class="label">核心产物</span><p><code>paper/main.tex</code>、章节、参考文献、图表、<code>paper/main.pdf</code> 和各审计报告。</p></div></div>
+      <ol class="steps">
+        <li><strong>设定 assurance 与论文契约</strong><p>默认 <code>draft</code>；<code>max / beast</code> 推导为 <code>submission</code>。先用 <a href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/paper-plan/SKILL.md">paper-plan</a> 建大纲、主张证据矩阵和图表计划，并在写作前记录验收条件。</p></li>
+        <li><strong>制作图表和方法示意</strong><p><a href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/paper-figure/SKILL.md">paper-figure</a> 从数据生成图表。架构示意可按配置选 <a href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/figure-spec/SKILL.md">figure-spec</a>（默认）、<a href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/paper-illustration/SKILL.md">Gemini 插图</a>、<a href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/paper-illustration-image2/SKILL.md">Codex 图像</a>、<a href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/mermaid-diagram/SKILL.md">Mermaid</a>，或手工提供。</p></li>
+        <li><strong>逐节写作并编译</strong><p><a href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/paper-write/SKILL.md">paper-write</a> 生成 LaTeX 章节和引文；<a href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/paper-compile/SKILL.md">paper-compile</a> 构建 PDF 并检查引用、页数和排版。</p></li>
+        <li><strong>内容修订</strong><p><a href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/auto-paper-improvement-loop/SKILL.md">auto-paper-improvement-loop</a> 默认进行两轮评审、修订和重编译。理论论文可先经 <a href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/proof-checker/SKILL.md">proof-checker</a> 检查证明。</p></li>
+        <li><strong>核对主张与来源</strong><p>有数值主张和原始结果时，最终重跑 <a href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/paper-claim-audit/SKILL.md">paper-claim-audit</a>；有引文时运行 <a href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/citation-audit/SKILL.md">citation-audit</a>。理论或范围较强的论文还可能调用 <a href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/kill-argument/SKILL.md">kill-argument</a>。投稿级别默认包含 <a href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/integrity-forensics/SKILL.md">integrity-forensics</a>。</p></li>
+        <li><strong>投稿 gate 与最终报告</strong><p><code>assurance: submission</code> 时，相关审计必须留下 JSON 结果，由 <code>verify_paper_audits.sh</code> 核对存在性、格式、新鲜度与阻断 verdict；论文验收契约和取证 gate 另行检查。任何红灯都会阻止最终报告。</p></li>
+      </ol>
+      <div class="gate"><strong>继续条件</strong><span><code>draft</code> 与 <code>submission</code> 的门槛不同；编译成功仅表示 PDF 生成。投稿级最终报告还要过审计 gate，并区分独立接受与暂定状态。</span></div>
+      <p class="artifact"><strong>建议先看：</strong>论文中的每个核心主张能否指向结果或文献；各审计是否针对最终版本而非旧稿运行。</p>
+      <p class="source">依据：<a href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/paper-writing/SKILL.md">paper-writing/SKILL.md</a> 的 Phase 0–6。</p>
+    </section>
+
+    <section id="after">
+      <h2>W4–W6 · 论文之后按需启动</h2>
+      <p>这三条不是 W1–W3 的固定后续：只有收到审稿意见、准备改投或准备报告时才选对应入口。</p>
+      <div class="secondary">
+        <article class="mini"><h3>W4 · <a href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/rebuttal/SKILL.md">rebuttal</a></h3><p>输入论文与审稿意见，输出可提交的回复。</p><ol><li>校验 venue 规则并把意见拆成独立问题。</li><li>为每条问题定证据和回复策略；必要时补有限实验。</li><li>起草、做安全校验、交外部 reviewer 压力测试。</li></ol><p>重点检查承诺是否有证据、是否覆盖每条评论。</p></article>
+        <article class="mini"><h3>W5 · <a href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/resubmit-pipeline/SKILL.md">resubmit-pipeline</a></h3><p>输入旧论文与新 venue，输出隔离的新版本。</p><ol><li>先复制隔离并做健康、匿名和审计检查。</li><li>在白名单内做针对性文本修改。</li><li>过对抗 gate、编译、审查差异和最终报告。</li></ol><p>硬约束：不新增实验、不改参考文献、不覆盖旧投稿。</p></article>
+        <article class="mini"><h3>W6 · <a href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/paper-talk/SKILL.md">paper-talk</a></h3><p>输入已编译论文，输出会议报告资料。</p><ol><li>确认幻灯片大纲，调用 paper-slides 做 Beamer/PPTX。</li><li>按 assurance 水平用 slides-polish 逐页打磨。</li><li>核查幻灯片主张、引用与匿名信息，再导出。</li></ol><p>另有独立 <a href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/paper-poster-html/SKILL.md">paper-poster-html</a> 做海报。</p></article>
+      </div>
+    </section>
+
+    <section id="branches">
+      <h2>独立支线与横向能力</h2>
+      <div class="secondary">
+        <article class="mini"><h3>专利与基金</h3><p><a href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/patent-pipeline/SKILL.md">patent-pipeline</a> 从现有技术检索、可专利性判断、发明披露、权利要求、说明书，走到外部审查和法域格式。<a href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/grant-proposal/SKILL.md">grant-proposal</a> 则从研究想法和文献起草基金申请。</p></article>
+        <article class="mini"><h3>证明与领域变体</h3><p><a href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/proof-orchestrator/SKILL.md">proof-orchestrator</a> 管理跨 run 的证明任务；<a href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/proof-writer/SKILL.md">proof-writer</a> 写证明，<a href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/proof-checker/SKILL.md">proof-checker</a> 独立核验。<a href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/idea-discovery-robot/SKILL.md">idea-discovery-robot</a> 是机器人找题适配版。</p></article>
+        <article class="mini"><h3>记忆与自我改进</h3><p><a href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/research-wiki/SKILL.md">research-wiki</a> 跨阶段保存论文、想法、实验和主张。<a href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/meta-optimize/SKILL.md">meta-optimize</a> 只提出 skill 改进，<a href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/skills/meta-apply/SKILL.md">meta-apply</a> 才负责在通过门槛后应用。</p></article>
+      </div>
+    </section>
+
+    <section id="handoff">
+      <h2>阶段间传递的关键文件</h2>
+      <div style="overflow-x:auto"><table class="handoff"><thead><tr><th>文件</th><th>由谁形成</th><th>下一段如何使用</th></tr></thead><tbody>
+        <tr><td><code>idea-stage/IDEA_REPORT.md</code></td><td>W1</td><td>保留候选、查新、pilot 和选择理由</td></tr>
+        <tr><td><code>idea-stage/docs/research_contract.md</code></td><td>W1</td><td>W1.5、结果到主张判断读取已选主张</td></tr>
+        <tr><td><code>refine-logs/EXPERIMENT_PLAN.md</code></td><td>W1</td><td>W1.5 据此实现并运行实验</td></tr>
+        <tr><td><code>refine-logs/EXPERIMENT_RESULTS.md</code></td><td>W1.5</td><td>W2 评审、分析和进一步修复的证据</td></tr>
+        <tr><td><code>review-stage/AUTO_REVIEW.md</code></td><td>W2</td><td>记录每轮评审、改动和结果</td></tr>
+        <tr><td><code>NARRATIVE_REPORT.md</code></td><td>总流程的汇总阶段或研究者</td><td>W3 规划和撰写论文</td></tr>
+        <tr><td><code>paper/main.pdf</code> 与审计 JSON</td><td>W3</td><td>投稿判断、W4 回复、W5 改投、W6 报告</td></tr>
+      </tbody></table></div>
+    </section>
+
+    <footer>本页依据本地 ARIS 提交 <code>3b19a22</code> 的编排技能及 <a href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/main/AGENT_GUIDE.md">AGENT_GUIDE.md</a> 编写。若以后更新 ARIS，具体开关、调用顺序和 gate 以新版本 <code>SKILL.md</code> 为准。<a href="aris-skills-architecture.html">返回总架构图</a>。</footer>
+  </main>
+</div>
+</body>
+</html>

@@ -28,23 +28,22 @@ python3 skills/literature-landscape/scripts/search_sources.py "research topic in
 
 ## 安装
 
-在本工作区里可先列出本地技能；在目标项目目录中用本地路径安装：
+仓库已经发布。在要使用技能的项目目录中运行：
 
 ```bash
-npx skills add /path/to/scholar-workflows --list
-npx skills add /path/to/scholar-workflows --skill literature-landscape -a codex
+npx skills add Nullion2021/scholar-workflows --list
+npx skills add Nullion2021/scholar-workflows --skill literature-landscape -a codex
 ```
 
-将**这个目录本身**发布为 GitHub 仓库 `OWNER/scholar-workflows` 后，可在其他机器或项目中安装：
+Claude Code 用户把 `-a codex` 改为 `-a claude-code`；要安装到个人全局目录，在安装命令末尾加 `-g`。
+
+如果已经克隆了本仓库，并且当前终端位于仓库根目录，也可以从本地发现技能：
 
 ```bash
-npx skills add OWNER/scholar-workflows --list
-npx skills add OWNER/scholar-workflows --skill literature-landscape -a codex
-# Claude Code：把 -a codex 改为 -a claude-code
-# 所有个人项目通用：在安装命令末尾加 -g
+npx skills add . --list
 ```
 
-`OWNER` 换成实际 GitHub 用户名或组织名。远程安装需要先把仓库推送到 GitHub。也可以安装私有仓库，只要目标机器已有对应的 Git 凭据。
+私有仓库也可通过相同命令安装，但运行命令的机器需要有对应的 Git 凭据。
 
 ## 后续添加技能
 
